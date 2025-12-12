@@ -1,0 +1,433 @@
+<!DOCTYPE html>
+<html lang="zh-TW">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>GDP_UI_02 - 內容顯示頁面 Wireframe</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+        
+        body {
+            font-family: 'Microsoft JhengHei', Arial, sans-serif;
+            background-color: #1a1a1a;
+            color: #ffffff;
+            height: 100vh;
+            display: flex;
+            flex-direction: column;
+        }
+        
+        /* Header 區域 */
+        .header {
+            background-color: #2d2d2d;
+            padding: 15px 20px;
+            border-bottom: 2px solid #404040;
+            display: flex;
+            align-items: center;
+        }
+        
+        .header-title {
+            font-size: 20px;
+            font-weight: bold;
+            cursor: pointer;
+            transition: color 0.3s;
+        }
+        
+        .header-title:hover {
+            color: #4a9eff;
+        }
+        
+        /* 主要內容區域 */
+        .main-container {
+            display: flex;
+            flex: 1;
+            overflow: hidden;
+        }
+        
+        /* 左側選單區域 */
+        .sidebar {
+            width: 250px;
+            background-color: #252525;
+            border-right: 2px solid #404040;
+            overflow-y: auto;
+            padding: 10px 0;
+        }
+        
+        /* 選單項目 */
+        .menu-group {
+            margin-bottom: 5px;
+        }
+        
+        .menu-title {
+            padding: 12px 20px;
+            background-color: #2d2d2d;
+            cursor: pointer;
+            font-weight: bold;
+            font-size: 15px;
+            border-left: 3px solid transparent;
+            transition: all 0.3s;
+        }
+        
+        .menu-title:hover {
+            background-color: #353535;
+            border-left-color: #4a9eff;
+        }
+        
+        .menu-items {
+            display: none;
+            background-color: #1f1f1f;
+        }
+        
+        .menu-items.active {
+            display: block;
+        }
+        
+        .menu-item {
+            padding: 10px 20px 10px 35px;
+            cursor: pointer;
+            font-size: 14px;
+            border-left: 3px solid transparent;
+            transition: all 0.3s;
+        }
+        
+        .menu-item:hover {
+            background-color: #2a2a2a;
+            border-left-color: #4a9eff;
+        }
+        
+        .menu-item.selected {
+            background-color: #3a3a3a;
+            border-left-color: #4a9eff;
+            color: #4a9eff;
+        }
+        
+        /* 右側顯示區域 */
+        .content-area {
+            flex: 1;
+            padding: 30px;
+            overflow-y: auto;
+            background-color: #1a1a1a;
+        }
+        
+        .page-header {
+            border-bottom: 2px solid #404040;
+            padding-bottom: 15px;
+            margin-bottom: 30px;
+        }
+        
+        .page-header h1 {
+            font-size: 28px;
+            color: #ffffff;
+            margin-bottom: 10px;
+        }
+        
+        .page-header .breadcrumb {
+            font-size: 14px;
+            color: #888888;
+        }
+        
+        .page-content {
+            background-color: #252525;
+            padding: 25px;
+            border-radius: 8px;
+            border: 1px solid #404040;
+        }
+        
+        .content-section {
+            margin-bottom: 25px;
+        }
+        
+        .content-section h2 {
+            font-size: 20px;
+            color: #4a9eff;
+            margin-bottom: 15px;
+        }
+        
+        .content-section p {
+            color: #cccccc;
+            line-height: 1.6;
+        }
+        
+        .embed-type-indicator {
+            display: inline-block;
+            padding: 5px 12px;
+            background-color: #2d5f2d;
+            color: #7fff7f;
+            border-radius: 4px;
+            font-size: 12px;
+            font-weight: bold;
+            margin-left: 10px;
+        }
+        
+        .url-type-indicator {
+            display: inline-block;
+            padding: 5px 12px;
+            background-color: #5f2d2d;
+            color: #ff7f7f;
+            border-radius: 4px;
+            font-size: 12px;
+            font-weight: bold;
+            margin-left: 10px;
+        }
+        
+        /* 標註文字 */
+        .annotation {
+            position: absolute;
+            background-color: #ff6b6b;
+            color: white;
+            padding: 5px 10px;
+            border-radius: 4px;
+            font-size: 12px;
+            font-weight: bold;
+            z-index: 1000;
+        }
+        
+        .arrow {
+            border: solid #ff6b6b;
+            border-width: 0 2px 2px 0;
+            display: inline-block;
+            padding: 3px;
+            position: absolute;
+        }
+        
+        .arrow-down {
+            transform: rotate(45deg);
+        }
+        
+        /* 模擬 iframe 嵌入內容 */
+        .embedded-content {
+            background-color: #1a1a1a;
+            border: 2px dashed #4a9eff;
+            padding: 20px;
+            border-radius: 5px;
+            margin-top: 20px;
+            min-height: 200px;
+        }
+        
+        .embedded-content h3 {
+            color: #4a9eff;
+            margin-bottom: 10px;
+        }
+        
+        /* URL 導頁提示 */
+        .url-redirect-notice {
+            background-color: #3a2a2a;
+            border-left: 4px solid #ff7f7f;
+            padding: 15px;
+            margin-top: 20px;
+        }
+        
+        .url-redirect-notice p {
+            color: #ffcccc;
+        }
+    </style>
+</head>
+<body>
+    <!-- 標註：顯示內容的兩種模式 -->
+    <div class="annotation" style="top: 80px; right: 20px;">
+        內容顯示區域<br>
+        支援內嵌與URL導頁兩種模式
+        <div class="arrow arrow-down" style="top: -15px; left: 50%; transform: translateX(-50%) rotate(45deg);"></div>
+    </div>
+    
+    <!-- Header -->
+    <header class="header">
+        <div class="header-title" onclick="goToHome()">GDP POC 系統</div>
+    </header>
+    
+    <!-- 主要容器 -->
+    <div class="main-container">
+        <!-- 左側選單 -->
+        <aside class="sidebar">
+            <div class="menu-group">
+                <div class="menu-title" onclick="toggleMenu(this)">
+                    ▼ 功能選單 A
+                </div>
+                <div class="menu-items active">
+                    <div class="menu-item selected" onclick="selectPage(this, 'embed', '功能選單 A', '內嵌頁面 A1')">
+                        內嵌頁面 A1
+                    </div>
+                    <div class="menu-item" onclick="selectPage(this, 'url', '功能選單 A', 'URL導頁 A2')">
+                        URL導頁 A2
+                    </div>
+                    <div class="menu-item" onclick="selectPage(this, 'embed', '功能選單 A', '內嵌頁面 A3')">
+                        內嵌頁面 A3
+                    </div>
+                </div>
+            </div>
+            
+            <div class="menu-group">
+                <div class="menu-title" onclick="toggleMenu(this)">
+                    ▶ 功能選單 B
+                </div>
+                <div class="menu-items">
+                    <div class="menu-item" onclick="selectPage(this, 'embed', '功能選單 B', '內嵌頁面 B1')">
+                        內嵌頁面 B1
+                    </div>
+                    <div class="menu-item" onclick="selectPage(this, 'url', '功能選單 B', 'URL導頁 B2')">
+                        URL導頁 B2
+                    </div>
+                </div>
+            </div>
+        </aside>
+        
+        <!-- 右側顯示區域 - 內嵌頁面範例 -->
+        <main class="content-area" id="contentArea">
+            <div class="page-header">
+                <h1>
+                    內嵌頁面 A1
+                    <span class="embed-type-indicator">內嵌模式</span>
+                </h1>
+                <div class="breadcrumb">功能選單 A > 內嵌頁面 A1</div>
+            </div>
+            
+            <div class="page-content">
+                <div class="content-section">
+                    <h2>內嵌頁面說明</h2>
+                    <p>此頁面內容直接嵌入在右側顯示區域中，不會進行頁面跳轉或開啟新視窗。</p>
+                    <p>使用者可以在同一個系統框架內瀏覽所有功能，保持操作連貫性。</p>
+                </div>
+                
+                <div class="content-section">
+                    <h2>模擬嵌入內容</h2>
+                    <div class="embedded-content">
+                        <h3>嵌入式內容區塊</h3>
+                        <p style="color: #cccccc;">這裡可以放置實際的功能頁面內容，例如：</p>
+                        <ul style="color: #cccccc; margin-left: 20px; margin-top: 10px;">
+                            <li>表單輸入介面</li>
+                            <li>資料查詢結果</li>
+                            <li>圖表與統計資料</li>
+                            <li>各種業務功能元件</li>
+                        </ul>
+                    </div>
+                </div>
+            </div>
+        </main>
+    </div>
+    
+    <script>
+        // 切換選單展開/收合
+        function toggleMenu(element) {
+            const menuItems = element.nextElementSibling;
+            const isActive = menuItems.classList.contains('active');
+            
+            if (isActive) {
+                menuItems.classList.remove('active');
+                element.textContent = element.textContent.replace('▼', '▶');
+            } else {
+                menuItems.classList.add('active');
+                element.textContent = element.textContent.replace('▶', '▼');
+            }
+        }
+        
+        // 選擇頁面
+        function selectPage(element, type, menuName, pageName) {
+            // 移除所有選中狀態
+            document.querySelectorAll('.menu-item').forEach(item => {
+                item.classList.remove('selected');
+            });
+            
+            // 設定當前選中
+            element.classList.add('selected');
+            
+            // 更新內容區域
+            const contentArea = document.getElementById('contentArea');
+            
+            if (type === 'embed') {
+                // 內嵌頁面內容
+                contentArea.innerHTML = `
+                    <div class="page-header">
+                        <h1>
+                            ${pageName}
+                            <span class="embed-type-indicator">內嵌模式</span>
+                        </h1>
+                        <div class="breadcrumb">${menuName} > ${pageName}</div>
+                    </div>
+                    
+                    <div class="page-content">
+                        <div class="content-section">
+                            <h2>內嵌頁面說明</h2>
+                            <p>此頁面內容直接嵌入在右側顯示區域中，不會進行頁面跳轉或開啟新視窗。</p>
+                            <p>使用者可以在同一個系統框架內瀏覽所有功能，保持操作連貫性。</p>
+                        </div>
+                        
+                        <div class="content-section">
+                            <h2>模擬嵌入內容</h2>
+                            <div class="embedded-content">
+                                <h3>嵌入式內容區塊</h3>
+                                <p style="color: #cccccc;">這裡可以放置實際的功能頁面內容，例如：</p>
+                                <ul style="color: #cccccc; margin-left: 20px; margin-top: 10px;">
+                                    <li>表單輸入介面</li>
+                                    <li>資料查詢結果</li>
+                                    <li>圖表與統計資料</li>
+                                    <li>各種業務功能元件</li>
+                                </ul>
+                            </div>
+                        </div>
+                    </div>
+                `;
+            } else {
+                // URL 導頁內容
+                contentArea.innerHTML = `
+                    <div class="page-header">
+                        <h1>
+                            ${pageName}
+                            <span class="url-type-indicator">URL導頁模式</span>
+                        </h1>
+                        <div class="breadcrumb">${menuName} > ${pageName}</div>
+                    </div>
+                    
+                    <div class="page-content">
+                        <div class="content-section">
+                            <h2>URL 導頁說明</h2>
+                            <p>此頁面將根據選單結構中的參數進行 URL 導向。</p>
+                            <p>系統會將使用者導向至指定的外部連結或獨立頁面。</p>
+                        </div>
+                        
+                        <div class="url-redirect-notice">
+                            <p><strong>⚠ 導頁提示</strong></p>
+                            <p style="margin-top: 10px;">實際運作時，此處會執行頁面跳轉行為：</p>
+                            <ul style="margin-left: 20px; margin-top: 10px;">
+                                <li>在當前視窗開啟新頁面</li>
+                                <li>或在新分頁開啟外部連結</li>
+                                <li>導向目標由選單結構參數決定</li>
+                            </ul>
+                        </div>
+                        
+                        <div class="content-section" style="margin-top: 25px;">
+                            <h2>應用場景</h2>
+                            <p style="color: #cccccc;">URL 導頁適用於以下情境：</p>
+                            <ul style="color: #cccccc; margin-left: 20px; margin-top: 10px;">
+                                <li>連結至外部系統或服務</li>
+                                <li>開啟獨立運作的功能頁面</li>
+                                <li>導向需要完整視窗空間的應用</li>
+                                <li>整合第三方工具或儀表板</li>
+                            </ul>
+                        </div>
+                    </div>
+                `;
+            }
+        }
+        
+        // 回到首頁
+        function goToHome() {
+            // 移除所有選中狀態
+            document.querySelectorAll('.menu-item').forEach(item => {
+                item.classList.remove('selected');
+            });
+            
+            // 恢復歡迎訊息
+            const contentArea = document.getElementById('contentArea');
+            contentArea.innerHTML = `
+                <div style="text-align: center; margin-top: 100px;">
+                    <h1 style="font-size: 36px; margin-bottom: 20px;">歡迎使用 GDP POC 系統</h1>
+                    <p style="font-size: 18px; color: #cccccc;">請從左側選單選擇功能頁面</p>
+                </div>
+            `;
+        }
+    </script>
+</body>
+</html>

@@ -1,0 +1,327 @@
+<!DOCTYPE html>
+<html lang="zh-TW">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>GDP_UI_01 - 系統首頁 Wireframe</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+        
+        body {
+            font-family: 'Microsoft JhengHei', Arial, sans-serif;
+            background-color: #1a1a1a;
+            color: #ffffff;
+            height: 100vh;
+            display: flex;
+            flex-direction: column;
+        }
+        
+        /* Header 區域 */
+        .header {
+            background-color: #2d2d2d;
+            padding: 15px 20px;
+            border-bottom: 2px solid #404040;
+            display: flex;
+            align-items: center;
+        }
+        
+        .header-title {
+            font-size: 20px;
+            font-weight: bold;
+            cursor: pointer;
+            transition: color 0.3s;
+        }
+        
+        .header-title:hover {
+            color: #4a9eff;
+        }
+        
+        /* 主要內容區域 */
+        .main-container {
+            display: flex;
+            flex: 1;
+            overflow: hidden;
+        }
+        
+        /* 左側選單區域 */
+        .sidebar {
+            width: 250px;
+            background-color: #252525;
+            border-right: 2px solid #404040;
+            overflow-y: auto;
+            padding: 10px 0;
+        }
+        
+        .sidebar.empty {
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            color: #666666;
+            font-size: 14px;
+        }
+        
+        /* 選單項目 */
+        .menu-group {
+            margin-bottom: 5px;
+        }
+        
+        .menu-title {
+            padding: 12px 20px;
+            background-color: #2d2d2d;
+            cursor: pointer;
+            font-weight: bold;
+            font-size: 15px;
+            border-left: 3px solid transparent;
+            transition: all 0.3s;
+        }
+        
+        .menu-title:hover {
+            background-color: #353535;
+            border-left-color: #4a9eff;
+        }
+        
+        .menu-items {
+            display: none;
+            background-color: #1f1f1f;
+        }
+        
+        .menu-items.active {
+            display: block;
+        }
+        
+        .menu-item {
+            padding: 10px 20px 10px 35px;
+            cursor: pointer;
+            font-size: 14px;
+            border-left: 3px solid transparent;
+            transition: all 0.3s;
+        }
+        
+        .menu-item:hover {
+            background-color: #2a2a2a;
+            border-left-color: #4a9eff;
+        }
+        
+        .menu-item.selected {
+            background-color: #3a3a3a;
+            border-left-color: #4a9eff;
+            color: #4a9eff;
+        }
+        
+        /* 右側顯示區域 */
+        .content-area {
+            flex: 1;
+            padding: 30px;
+            overflow-y: auto;
+            background-color: #1a1a1a;
+        }
+        
+        .welcome-message {
+            text-align: center;
+            margin-top: 100px;
+        }
+        
+        .welcome-message h1 {
+            font-size: 36px;
+            margin-bottom: 20px;
+            color: #ffffff;
+        }
+        
+        .welcome-message p {
+            font-size: 18px;
+            color: #cccccc;
+        }
+        
+        /* 標註文字 */
+        .annotation {
+            position: absolute;
+            background-color: #ff6b6b;
+            color: white;
+            padding: 5px 10px;
+            border-radius: 4px;
+            font-size: 12px;
+            font-weight: bold;
+            z-index: 1000;
+        }
+        
+        .arrow {
+            border: solid #ff6b6b;
+            border-width: 0 2px 2px 0;
+            display: inline-block;
+            padding: 3px;
+            position: absolute;
+        }
+        
+        .arrow-down {
+            transform: rotate(45deg);
+        }
+        
+        .arrow-right {
+            transform: rotate(-45deg);
+        }
+    </style>
+</head>
+<body>
+    <!-- 標註：Header 區域 -->
+    <div class="annotation" style="top: 5px; left: 50%; transform: translateX(-50%);">
+        Header 區域 - 顯示系統標題，可點選回首頁
+    </div>
+    
+    <!-- Header -->
+    <header class="header">
+        <div class="header-title" onclick="goToHome()">GDP POC 系統</div>
+    </header>
+    
+    <!-- 主要容器 -->
+    <div class="main-container">
+        <!-- 標註：左側選單 -->
+        <div class="annotation" style="top: 100px; left: 10px;">
+            左側選單區域<br>
+            雙層式選單結構<br>
+            (選單 > 頁面)
+            <div class="arrow arrow-right" style="top: 20px; right: -15px;"></div>
+        </div>
+        
+        <!-- 左側選單 - 範例狀態：已載入選單 -->
+        <aside class="sidebar" id="sidebar">
+            <div class="menu-group">
+                <div class="menu-title" onclick="toggleMenu(this)">
+                    ▼ 選單群組 1
+                </div>
+                <div class="menu-items active">
+                    <div class="menu-item" onclick="selectPage(this, 'embed')">頁面 1-1 (內嵌)</div>
+                    <div class="menu-item" onclick="selectPage(this, 'url')">頁面 1-2 (URL導頁)</div>
+                    <div class="menu-item" onclick="selectPage(this, 'embed')">頁面 1-3 (內嵌)</div>
+                </div>
+            </div>
+            
+            <div class="menu-group">
+                <div class="menu-title" onclick="toggleMenu(this)">
+                    ▶ 選單群組 2
+                </div>
+                <div class="menu-items">
+                    <div class="menu-item" onclick="selectPage(this, 'embed')">頁面 2-1 (內嵌)</div>
+                    <div class="menu-item" onclick="selectPage(this, 'url')">頁面 2-2 (URL導頁)</div>
+                </div>
+            </div>
+            
+            <div class="menu-group">
+                <div class="menu-title" onclick="toggleMenu(this)">
+                    ▶ 選單群組 3
+                </div>
+                <div class="menu-items">
+                    <div class="menu-item" onclick="selectPage(this, 'embed')">頁面 3-1 (內嵌)</div>
+                </div>
+            </div>
+        </aside>
+        
+        <!-- 標註：右側顯示區域 -->
+        <div class="annotation" style="top: 100px; right: 10px;">
+            <div class="arrow arrow-down" style="top: -15px; left: 50%; transform: translateX(-50%) rotate(45deg);"></div>
+            右側顯示區域<br>
+            初始顯示歡迎標語<br>
+            點選選單後顯示對應頁面
+        </div>
+        
+        <!-- 右側顯示區域 -->
+        <main class="content-area" id="contentArea">
+            <div class="welcome-message">
+                <h1>歡迎使用 GDP POC 系統</h1>
+                <p>請從左側選單選擇功能頁面</p>
+            </div>
+        </main>
+    </div>
+    
+    <!-- 選單為空狀態的範例（預設隱藏） -->
+    <aside class="sidebar empty" id="sidebarEmpty" style="display: none;">
+        選單載入中或無選單資料
+    </aside>
+    
+    <script>
+        // 切換選單展開/收合
+        function toggleMenu(element) {
+            const menuItems = element.nextElementSibling;
+            const isActive = menuItems.classList.contains('active');
+            
+            if (isActive) {
+                menuItems.classList.remove('active');
+                element.textContent = element.textContent.replace('▼', '▶');
+            } else {
+                menuItems.classList.add('active');
+                element.textContent = element.textContent.replace('▶', '▼');
+            }
+        }
+        
+        // 選擇頁面
+        function selectPage(element, type) {
+            // 移除所有選中狀態
+            document.querySelectorAll('.menu-item').forEach(item => {
+                item.classList.remove('selected');
+            });
+            
+            // 設定當前選中
+            element.classList.add('selected');
+            
+            // 更新內容區域
+            const contentArea = document.getElementById('contentArea');
+            const pageName = element.textContent;
+            
+            if (type === 'embed') {
+                contentArea.innerHTML = `
+                    <h2>內嵌頁面：${pageName}</h2>
+                    <p style="margin-top: 20px; color: #cccccc;">此頁面內容直接嵌入顯示區域</p>
+                    <div style="margin-top: 30px; padding: 20px; background-color: #252525; border-radius: 5px;">
+                        <p>頁面內容區域...</p>
+                    </div>
+                `;
+            } else {
+                contentArea.innerHTML = `
+                    <h2>URL 導頁：${pageName}</h2>
+                    <p style="margin-top: 20px; color: #cccccc;">此頁面將進行 URL 導向</p>
+                    <div style="margin-top: 30px; padding: 20px; background-color: #252525; border-radius: 5px;">
+                        <p>模擬 URL 導頁行為...</p>
+                    </div>
+                `;
+            }
+        }
+        
+        // 回到首頁
+        function goToHome() {
+            // 移除所有選中狀態
+            document.querySelectorAll('.menu-item').forEach(item => {
+                item.classList.remove('selected');
+            });
+            
+            // 恢復歡迎訊息
+            const contentArea = document.getElementById('contentArea');
+            contentArea.innerHTML = `
+                <div class="welcome-message">
+                    <h1>歡迎使用 GDP POC 系統</h1>
+                    <p>請從左側選單選擇功能頁面</p>
+                </div>
+            `;
+        }
+        
+        // 模擬選單載入失敗（開發時可切換狀態測試）
+        function toggleEmptyState() {
+            const sidebar = document.getElementById('sidebar');
+            const sidebarEmpty = document.getElementById('sidebarEmpty');
+            
+            if (sidebar.style.display === 'none') {
+                sidebar.style.display = 'block';
+                sidebarEmpty.style.display = 'none';
+            } else {
+                sidebar.style.display = 'none';
+                sidebarEmpty.style.display = 'flex';
+            }
+        }
+        
+        // 在 console 輸入 toggleEmptyState() 可切換選單空白狀態
+        console.log('提示：在 console 輸入 toggleEmptyState() 可測試選單空白狀態');
+    </script>
+</body>
+</html>

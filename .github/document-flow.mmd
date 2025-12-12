@@ -1,0 +1,79 @@
+---
+config:
+  theme: redux
+  layout: dagre
+---
+flowchart TB
+    A(["Follow instructions in document.prd.prompt.md"]) --> n45["讀取document.prd.prompt.md 以此prompts作業"]
+    n2["是否存在需求說明書.md"] -- Yes --> n3["更新需求說明書.md"]
+    n2 -- No --> n4["產生需求說明書.md"]
+    n4 --> n3
+    n8["確認功能編號是否存在需求規格書.md內"] -- Yes --> n10["是否存在功能流程圖.md"]
+    n12["產生功能流程圖.md"] --> n11["更新功能流程圖.md"]
+    n11 --> n13["[暫停流程]檢視產出結果並詢問使用者"]
+    n13 --> n14["使用者建議"]
+    n14 -- Yes --> n11
+    n10 -- No --> n12
+    n10 -- Yes --> n11
+    n14 -- No --> n16["讀取 document.sa.prompt.md 以此prompts作業"]
+    n16 --> n17["確認功能編號和API編號是否存在功能流程圖.md內"]
+    n17 -- Yes --> n19["是否存在系統分析文件.md"]
+    n20["產生系統分析文件.md"] --> n21["[暫停流程]請使用者依功能內的API編號說明業務邏輯"]
+    n19 -- No --> n20
+    n19 -- Yes --> n21
+    n21 --> n22["是否含SQL"]
+    n22 -- Yes --> n23["是否存在資料庫設計文件.md"]
+    n23 -- No --> n24["產生 資料庫設計文件.md"]
+    n24 --> n25["是否存在對應 Table"]
+    n23 -- Yes --> n25
+    n26(["[暫停流程]請使用者說明Table欄位和類型"]) --> n27["將Table和欄位資訊寫進資料庫設計文件.md"]
+    n25 -- Yes --> n28["Table是否存在對應欄位"]
+    n28 -- No --> n26
+    n22 -- No --> n30["更新 系統分析文件.md"]
+    n27 --> n30
+    n25 -- No --> n26
+    n31["[暫停流程]檢視產出結果並詢問使用者"] --> n32["使用者建議"]
+    n30 --> n31
+    n32 -- Yes --> n30
+    n28 -- Yes --> n30
+    n8 -- No --> n45
+    n17 -- No --> n44["讀取document.fc.prompt.md 以此prompts作業"]
+    n32 -- No --> n38["文件更新完成"]
+    n39["是否存在UI編號的wireframe html"] -- Yes --> n40["更新{UI編號}.html"]
+    n39 -- No --> n41["產生{UI編號}.html"]
+    n41 --> n40
+    n40 --> n42["[暫停流程]檢視產出結果並詢問使用者"]
+    n42 --> n43["使用者建議"]
+    n43 -- No --> n44
+    n44 --> n8
+    n15(["Follow instructions in document.fc.prompt.md"]) --> n44
+    n34@{ label: "<span style=\"color:\">Follow instructions in document.sa.prompt.md</span>" } --> n16
+    n43 -- Yes --> n3
+    n3 --> n39
+    n45 -- <br> --> n2
+
+    n45@{ shape: rect}
+    n2@{ shape: diam}
+    n8@{ shape: diam}
+    n10@{ shape: diam}
+    n12@{ shape: rect}
+    n11@{ shape: rect}
+    n13@{ shape: rect}
+    n14@{ shape: diam}
+    n16@{ shape: rect}
+    n17@{ shape: diam}
+    n19@{ shape: diam}
+    n20@{ shape: rect}
+    n21@{ shape: rect}
+    n22@{ shape: diam}
+    n23@{ shape: diam}
+    n25@{ shape: diam}
+    n28@{ shape: diam}
+    n31@{ shape: rect}
+    n32@{ shape: diam}
+    n39@{ shape: diam}
+    n40@{ shape: rect}
+    n41@{ shape: rect}
+    n42@{ shape: rect}
+    n43@{ shape: diam}
+    n34@{ shape: stadium}
