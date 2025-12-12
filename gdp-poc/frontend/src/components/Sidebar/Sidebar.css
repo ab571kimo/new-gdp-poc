@@ -1,0 +1,90 @@
+/* Sidebar 組件樣式 */
+.sidebar {
+  width: 250px;
+  background-color: #252525;
+  border-right: 2px solid #404040;
+  overflow-y: auto;
+  padding: 10px 0;
+}
+
+.sidebar.empty {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  color: #666666;
+  font-size: 14px;
+}
+
+/* 選單群組 */
+.menu-group {
+  margin-bottom: 5px;
+}
+
+.menu-title {
+  padding: 12px 20px;
+  background-color: #2d2d2d;
+  cursor: pointer;
+  font-weight: bold;
+  font-size: 15px;
+  border-left: 3px solid transparent;
+  transition: all 0.3s;
+  color: #ffffff;
+  user-select: none;
+}
+
+.menu-title:hover {
+  background-color: #353535;
+  border-left-color: #4a9eff;
+}
+
+.menu-title-icon {
+  display: inline-block;
+  width: 12px;
+  margin-right: 8px;
+  transition: transform 0.3s;
+}
+
+.menu-title-icon.expanded {
+  transform: rotate(90deg);
+}
+
+/* 頁面項目 */
+.menu-items {
+  display: none;
+  background-color: #1f1f1f;
+}
+
+.menu-items.active {
+  display: block;
+}
+
+.menu-item {
+  padding: 10px 20px 10px 35px;
+  cursor: pointer;
+  font-size: 14px;
+  border-left: 3px solid transparent;
+  transition: all 0.3s;
+  color: #ffffff;
+  user-select: none;
+}
+
+.menu-item:hover {
+  background-color: #2a2a2a;
+  border-left-color: #4a9eff;
+}
+
+.menu-item.selected {
+  background-color: #3a3a3a;
+  border-left-color: #4a9eff;
+  color: #4a9eff;
+}
+
+.menu-item.disabled {
+  cursor: not-allowed;
+  color: #666666;
+}
+
+.menu-item.disabled:hover {
+  background-color: #1f1f1f;
+  border-left-color: transparent;
+}
