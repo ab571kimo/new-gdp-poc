@@ -276,33 +276,16 @@
         
         <!-- 右側顯示區域 - 內嵌頁面範例 -->
         <main class="content-area" id="contentArea">
-            <div class="page-header">
-                <h1>
-                    內嵌頁面 A1
-                    <span class="embed-type-indicator">內嵌模式</span>
-                </h1>
-                <div class="breadcrumb">功能選單 A > 內嵌頁面 A1</div>
-            </div>
-            
-            <div class="page-content">
-                <div class="content-section">
-                    <h2>內嵌頁面說明</h2>
-                    <p>此頁面內容直接嵌入在右側顯示區域中，不會進行頁面跳轉或開啟新視窗。</p>
-                    <p>使用者可以在同一個系統框架內瀏覽所有功能，保持操作連貫性。</p>
-                </div>
-                
-                <div class="content-section">
-                    <h2>模擬嵌入內容</h2>
-                    <div class="embedded-content">
-                        <h3>嵌入式內容區塊</h3>
-                        <p style="color: #cccccc;">這裡可以放置實際的功能頁面內容，例如：</p>
-                        <ul style="color: #cccccc; margin-left: 20px; margin-top: 10px;">
-                            <li>表單輸入介面</li>
-                            <li>資料查詢結果</li>
-                            <li>圖表與統計資料</li>
-                            <li>各種業務功能元件</li>
-                        </ul>
-                    </div>
+            <div class="page-content" style="width: 100%; height: 100%;">
+                <div class="embedded-content">
+                    <h3>嵌入式內容區塊</h3>
+                    <p style="color: #cccccc;">這裡可以放置實際的功能頁面內容，例如：</p>
+                    <ul style="color: #cccccc; margin-left: 20px; margin-top: 10px;">
+                        <li>表單輸入介面</li>
+                        <li>資料查詢結果</li>
+                        <li>圖表與統計資料</li>
+                        <li>各種業務功能元件</li>
+                    </ul>
                 </div>
             </div>
         </main>
@@ -339,54 +322,23 @@
             if (type === 'embed') {
                 // 內嵌頁面內容
                 contentArea.innerHTML = `
-                    <div class="page-header">
-                        <h1>
-                            ${pageName}
-                            <span class="embed-type-indicator">內嵌模式</span>
-                        </h1>
-                        <div class="breadcrumb">${menuName} > ${pageName}</div>
-                    </div>
-                    
-                    <div class="page-content">
-                        <div class="content-section">
-                            <h2>內嵌頁面說明</h2>
-                            <p>此頁面內容直接嵌入在右側顯示區域中，不會進行頁面跳轉或開啟新視窗。</p>
-                            <p>使用者可以在同一個系統框架內瀏覽所有功能，保持操作連貫性。</p>
-                        </div>
-                        
-                        <div class="content-section">
-                            <h2>模擬嵌入內容</h2>
-                            <div class="embedded-content">
-                                <h3>嵌入式內容區塊</h3>
-                                <p style="color: #cccccc;">這裡可以放置實際的功能頁面內容，例如：</p>
-                                <ul style="color: #cccccc; margin-left: 20px; margin-top: 10px;">
-                                    <li>表單輸入介面</li>
-                                    <li>資料查詢結果</li>
-                                    <li>圖表與統計資料</li>
-                                    <li>各種業務功能元件</li>
-                                </ul>
-                            </div>
+                    <div class="page-content" style="width: 100%; height: 100%;">
+                        <div class="embedded-content">
+                            <h3>嵌入式內容區塊</h3>
+                            <p style="color: #cccccc;">這裡可以放置實際的功能頁面內容，例如：</p>
+                            <ul style="color: #cccccc; margin-left: 20px; margin-top: 10px;">
+                                <li>表單輸入介面</li>
+                                <li>資料查詢結果</li>
+                                <li>圖表與統計資料</li>
+                                <li>各種業務功能元件</li>
+                            </ul>
                         </div>
                     </div>
                 `;
             } else {
                 // URL 導頁內容
                 contentArea.innerHTML = `
-                    <div class="page-header">
-                        <h1>
-                            ${pageName}
-                            <span class="url-type-indicator">URL導頁模式</span>
-                        </h1>
-                        <div class="breadcrumb">${menuName} > ${pageName}</div>
-                    </div>
-                    
-                    <div class="page-content">
-                        <div class="content-section">
-                            <h2>URL 導頁說明</h2>
-                            <p>此頁面將根據選單結構中的參數進行 URL 導向。</p>
-                            <p>系統會將使用者導向至指定的外部連結或獨立頁面。</p>
-                        </div>
-                        
+                    <div class="page-content" style="width: 100%; height: 100%;">
                         <div class="url-redirect-notice">
                             <p><strong>⚠ 導頁提示</strong></p>
                             <p style="margin-top: 10px;">實際運作時，此處會執行頁面跳轉行為：</p>
@@ -394,17 +346,6 @@
                                 <li>在當前視窗開啟新頁面</li>
                                 <li>或在新分頁開啟外部連結</li>
                                 <li>導向目標由選單結構參數決定</li>
-                            </ul>
-                        </div>
-                        
-                        <div class="content-section" style="margin-top: 25px;">
-                            <h2>應用場景</h2>
-                            <p style="color: #cccccc;">URL 導頁適用於以下情境：</p>
-                            <ul style="color: #cccccc; margin-left: 20px; margin-top: 10px;">
-                                <li>連結至外部系統或服務</li>
-                                <li>開啟獨立運作的功能頁面</li>
-                                <li>導向需要完整視窗空間的應用</li>
-                                <li>整合第三方工具或儀表板</li>
                             </ul>
                         </div>
                     </div>

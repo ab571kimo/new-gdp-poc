@@ -268,21 +268,16 @@
             
             // 更新內容區域
             const contentArea = document.getElementById('contentArea');
-            const pageName = element.textContent;
             
             if (type === 'embed') {
                 contentArea.innerHTML = `
-                    <h2>內嵌頁面：${pageName}</h2>
-                    <p style="margin-top: 20px; color: #cccccc;">此頁面內容直接嵌入顯示區域</p>
-                    <div style="margin-top: 30px; padding: 20px; background-color: #252525; border-radius: 5px;">
+                    <div style="width: 100%; height: 100%; padding: 20px; background-color: #252525; border-radius: 5px;">
                         <p>頁面內容區域...</p>
                     </div>
                 `;
             } else {
                 contentArea.innerHTML = `
-                    <h2>URL 導頁：${pageName}</h2>
-                    <p style="margin-top: 20px; color: #cccccc;">此頁面將進行 URL 導向</p>
-                    <div style="margin-top: 30px; padding: 20px; background-color: #252525; border-radius: 5px;">
+                    <div style="width: 100%; height: 100%; padding: 20px; background-color: #252525; border-radius: 5px;">
                         <p>模擬 URL 導頁行為...</p>
                     </div>
                 `;
