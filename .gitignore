@@ -21,4 +21,3 @@ htmlcov/
 *.log
 .DS_Store
 backend/static/
-app.yaml
