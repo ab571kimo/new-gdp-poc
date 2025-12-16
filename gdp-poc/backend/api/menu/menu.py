@@ -76,10 +76,12 @@ async def get_menu_structure():
     try:
         logger.info("開始查詢選單結構資料")
         
-        # Databricks 連線設定 (從環境變數取得)
+        # Databricks 連線設定 (從 dbutils secrets 取得)
+        from databricks.sdk.runtime import dbutils
+        
         server_hostname = os.getenv("DATABRICKS_HOST")
-        http_path = os.getenv("WAREHOUSE_HTTP_PATH")
-        access_token = os.getenv("WAREHOUSE_TOKEN")
+        http_path = dbutils.secrets.get(scope="gdp-poc-keys", key="WAREHOUSE_HTTP_PATH")
+        access_token = dbutils.secrets.get(scope="gdp-poc-keys", key="WAREHOUSE_TOKEN")
         
         # 驗證環境變數
         if not all([server_hostname, http_path, access_token]):
