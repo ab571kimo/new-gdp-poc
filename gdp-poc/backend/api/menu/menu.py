@@ -7,7 +7,7 @@ import os
 import logging
 import time
 from typing import List, Optional
-from fastapi import APIRouter, HTTPException
+from fastapi import APIRouter, HTTPException, Request
 from pydantic import BaseModel, Field, field_validator
 from databricks import sql
 
@@ -82,17 +82,31 @@ def get_databricks_connection():
 # --- API Endpoints ---
 
 @router.get("/structure", response_model=MenuStructureResponse, status_code=200)
-async def get_menu_structure():
+async def get_menu_structure(request: Request):
     """
     GDP_API_0001 - 取得站台選單結構資料
     
-    回傳雙層式選單（選單群組 > 頁面）的完整結構
+    回傳雙層式選單（選單群組 > 頁面）的完整結構，依據使用者權限過濾
+    
+    Args:
+        request: FastAPI Request 物件，用於取得 headers
     
     Returns:
-        MenuStructureResponse: 包含選單群組和頁面的完整結構
+        MenuStructureResponse: 包含選單群組和頁面的完整結構（已過濾權限）
     """
     start_time = time.time()
     logger.info("📋 GET /api/menu/structure: 開始查詢選單結構")
+    
+    # 從 Request Header 取得使用者 ID
+    user_id = request.headers.get("X-Forwarded-Email")
+    if not user_id:
+        logger.warning("⚠️ 缺少 X-Forwarded-Email header")
+        raise HTTPException(
+            status_code=400,
+            detail={"error": "缺少使用者識別資訊", "errorCode": "MISSING_USER_ID"}
+        )
+    
+    logger.info(f"👤 使用者: {user_id}")
     
     try:
         connection = get_databricks_connection()
@@ -100,7 +114,19 @@ async def get_menu_structure():
         with connection:
             cursor = connection.cursor()
             
-            # 1. 查詢所有選單群組，依 menu_no 升冪排序
+            # 1. 查詢使用者有授權的頁面 ID 列表
+            user_page_query = """
+                SELECT page_id
+                FROM dev_temp.data_engineer.gdp_user_page
+                WHERE user_id = ?
+            """
+            logger.info(f"🔍 查詢使用者 {user_id} 的授權頁面...")
+            cursor.execute(user_page_query, (user_id,))
+            authorized_page_rows = cursor.fetchall()
+            authorized_page_ids = {row[0] for row in authorized_page_rows}
+            logger.info(f"✓ 使用者擁有 {len(authorized_page_ids)} 個授權頁面")
+            
+            # 2. 查詢所有選單群組，依 menu_no 升冪排序
             menu_query = """
                 SELECT menu_id, menu_name, menu_no
                 FROM dev_temp.data_engineer.gdp_menu_data
@@ -112,17 +138,19 @@ async def get_menu_structure():
             
             menu_groups = []
             
-            # 2. 為每個選單群組查詢對應的頁面
+            # 3. 為每個選單群組查詢對應的頁面（含權限過濾）
             for menu_row in menu_rows:
                 menu_id, menu_name, menu_no = menu_row
                 
                 page_query = """
-                    SELECT page_id, page_name, page_no, menu_id, dashboard_id, url, genie_id
-                    FROM dev_temp.data_engineer.gdp_page_data
-                    WHERE menu_id = ?
-                    ORDER BY page_no ASC
+                    SELECT p.page_id, p.page_name, p.page_no, p.menu_id, p.dashboard_id, p.url, p.genie_id
+                    FROM dev_temp.data_engineer.gdp_page_data p
+                    INNER JOIN dev_temp.data_engineer.gdp_user_page up ON p.page_id = up.page_id
+                    WHERE p.menu_id = ?
+                      AND up.user_id = ?
+                    ORDER BY p.page_no ASC
                 """
-                cursor.execute(page_query, (menu_id,))
+                cursor.execute(page_query, (menu_id, user_id))
                 page_rows = cursor.fetchall()
                 
                 pages = []
@@ -138,12 +166,16 @@ async def get_menu_structure():
                         genie_id=genie_id
                     ))
                 
-                menu_groups.append(MenuGroup(
-                    menu_id=menu_id,
-                    menu_name=menu_name,
-                    menu_no=menu_no,
-                    pages=pages
-                ))
+                # 4. 過濾選單群組：只保留有頁面的選單
+                if pages:
+                    menu_groups.append(MenuGroup(
+                        menu_id=menu_id,
+                        menu_name=menu_name,
+                        menu_no=menu_no,
+                        pages=pages
+                    ))
+                else:
+                    logger.info(f"⊘ 選單 {menu_id} - {menu_name} 無授權頁面，已過濾")
             
             cursor.close()
         
