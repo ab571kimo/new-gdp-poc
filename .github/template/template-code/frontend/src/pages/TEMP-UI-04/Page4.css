@@ -1,0 +1,91 @@
+.page4 {
+  max-width: 1200px;
+  margin: 0 auto;
+}
+
+.page4-header {
+  margin-bottom: 2rem;
+}
+
+.page4-header h1 {
+  font-size: 2rem;
+  color: #1e293b;
+  margin-bottom: 0.5rem;
+}
+
+.page4-header p {
+  color: #64748b;
+  font-size: 1rem;
+}
+
+.page4-content {
+  background-color: #fef2f2;
+  border: 1px solid #fecaca;
+  border-radius: 0.5rem;
+  padding: 2rem;
+  margin-bottom: 2rem;
+}
+
+.page4-content h2 {
+  font-size: 1.5rem;
+  color: #991b1b;
+  margin-bottom: 1rem;
+}
+
+.page4-content p {
+  color: #b91c1c;
+  line-height: 1.6;
+  margin-bottom: 1rem;
+}
+
+.page4-info {
+  background-color: #fef3c7;
+  border-left: 4px solid #f59e0b;
+  padding: 1rem 1.5rem;
+  border-radius: 0.25rem;
+}
+
+.page4-info h3 {
+  font-size: 1.125rem;
+  color: #92400e;
+  margin-bottom: 0.5rem;
+}
+
+.page4-info ul {
+  list-style: none;
+  padding-left: 0;
+}
+
+.page4-info li {
+  color: #92400e;
+  margin-bottom: 0.5rem;
+  padding-left: 1.5rem;
+  position: relative;
+}
+
+.page4-info li::before {
+  content: "►";
+  position: absolute;
+  left: 0.5rem;
+  font-weight: bold;
+}
+
+.route-info {
+  margin-top: 2rem;
+  padding: 1rem;
+  background-color: #fff;
+  border: 1px solid #e2e8f0;
+  border-radius: 0.375rem;
+}
+
+.route-info-label {
+  font-weight: 600;
+  color: #475569;
+  margin-bottom: 0.5rem;
+}
+
+.route-info-value {
+  font-family: 'Courier New', monospace;
+  color: #3b82f6;
+  font-size: 1.125rem;
+}

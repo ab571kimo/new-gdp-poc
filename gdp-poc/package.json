@@ -1,7 +1,7 @@
 {
-  "name": "gdp-poc-frontend",
+  "name": "gdp-poc",
   "version": "1.0.0",
-  "description": "GDP POC System Frontend",
+  "description": "GDP POC System - Menu Management",
   "private": true,
   "type": "module",
   "scripts": {

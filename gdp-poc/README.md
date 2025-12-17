@@ -1,176 +1,158 @@
 # GDP POC 系統
 
-版本：001
+一個基於 FastAPI 和 React 的選單管理系統，支援雙層式選單結構與動態頁面顯示。
 
-## 專案說明
+## 系統架構
 
-GDP POC 系統是一個基於 FastAPI (Python) 後端和 React (TypeScript) 前端的 Web 應用程式。
-提供雙層式選單結構（選單群組 > 頁面），支援內嵌頁面與 URL 導頁兩種顯示模式。
+- **後端**: FastAPI (Python 3.11)
+- **前端**: React 18.2 + TypeScript 5.x
+- **資料庫**: Databricks SQL Warehouse
+- **部署**: Databricks Apps
 
-## 技術架構
-
-### 後端
-- Python 3.11
-- FastAPI 0.109.0
-- Uvicorn 0.27.0
-- Databricks SQL Connector
-
-### 前端
-- React 18.2
-- TypeScript 5.x
-- Vite 5.x
-
-## 目錄結構
+## 專案結構
 
 ```
 gdp-poc/
-├── backend/                 # 後端程式碼
+├── backend/                    # 後端 API
 │   ├── __init__.py
-│   ├── main.py             # FastAPI 主應用程式
-│   └── api/
-│       └── menu/
-│           ├── __init__.py
-│           └── menu.py     # 選單 API (GDP_API_0001)
-├── frontend/               # 前端程式碼
+│   ├── main.py                # FastAPI 主程式
+│   ├── static/                # 前端建置輸出目錄
+│   ├── api/
+│   │   └── menu/
+│   │       ├── __init__.py
+│   │       └── menu.py        # 選單 API
+│   └── README.md
+├── frontend/                   # 前端應用
 │   ├── index.html
 │   ├── vite.config.ts
-│   ├── tsconfig.node.json
-│   └── src/
-│       ├── main.tsx        # React 入口
-│       ├── index.css       # 全局樣式
-│       ├── components/     # 共用組件
-│       │   ├── Header/     # Header 組件
-│       │   └── Sidebar/    # Sidebar 組件
-│       ├── GDP_UI_01/      # 系統首頁
-│       └── GDP_UI_02/      # 內容顯示頁面
-├── app.yaml               # Databricks Apps 配置
-├── package.json           # Node.js 依賴
-├── requirements.txt       # Python 依賴
-└── tsconfig.json         # TypeScript 配置
+│   ├── src/
+│   │   ├── main.tsx
+│   │   ├── App.tsx
+│   │   ├── components/       # 共用組件
+│   │   │   ├── Layout/
+│   │   │   └── Sidebar/
+│   │   ├── GDP_UI_01/        # 系統首頁
+│   │   ├── GDP_UI_02/        # 內容顯示頁面
+│   │   └── GDP_UI_03/        # 選單管理頁面
+│   └── README.md
+├── .databricks/
+│   └── .gitignore
+├── app.yaml                   # Databricks Apps 配置
+├── package.json               # Node.js 配置
+├── requirements.txt           # Python 依賴
+└── tsconfig.json             # TypeScript 配置
 ```
 
-## 環境變數設定
+## 功能列表
 
-### Databricks 連線
-在 `app.yaml` 或環境變數中設定：
+### 已實現的 API
 
-```yaml
-env:
-  - name: DATABRICKS_HOST
-    value: "your-databricks-host"
-  - name: WAREHOUSE_HTTP_PATH
-    value: "your-warehouse-http-path"
-  - name: WAREHOUSE_TOKEN
-    value: "your-access-token"
-```
+1. **GDP_API_0001** - `GET /api/menu/structure`
+   - 取得站台選單結構資料
+   - 回傳雙層式選單（選單群組 > 頁面）
 
-## 本機開發
+2. **GDP_API_0002** - `POST /api/menu/structure/batch-update`
+   - 批次更新選單與頁面結構
+   - 使用 Transaction 確保資料一致性
 
-### 1. 安裝依賴套件
+### 已實現的頁面
+
+1. **GDP_UI_01** - 系統首頁 (`/`)
+   - 顯示歡迎標語
+   - 包含 Header 和 Sidebar
+
+2. **GDP_UI_02** - 內容顯示頁面 (`/page/:pageId`)
+   - 支援內嵌模式（dashboard_id）
+   - 支援 URL 導頁模式（url）
+
+3. **GDP_UI_03** - 選單管理頁面 (`/admin/menu-management`)
+   - 編輯選單名稱
+   - 編輯頁面資訊（名稱、DASHBOARDID、URL、GENIEID）
+   - 調整選單與頁面順序
+   - 批次確定變更
+
+## 安裝與執行
+
+### 1. 安裝套件
 
 ```bash
-# 安裝 Python 依賴
-pip install -r requirements.txt
-
-# 安裝 Node.js 依賴
+# 安裝 Node.js 套件
 npm install
+
+# 安裝 Python 套件
+pip install -r requirements.txt
 ```
 
-### 2. 建置前端
+### 2. 開發模式
 
 ```bash
-npm run build
-```
-
-這會將前端打包到 `backend/static/` 目錄。
-
-### 3. 啟動後端服務
-
-```bash
-# 方式一：使用 uvicorn
-uvicorn backend.main:app --host 0.0.0.0 --port 8000
-
-# 方式二：使用提供的腳本
-bash ../run.sh
-```
-
-### 4. 開發模式
-
-前端開發時可以使用 Vite 開發伺服器：
-
-```bash
+# 前端開發伺服器（含 API 代理）
 npm run dev
+
+# 後端開發伺服器（另開終端）
+uvicorn backend.main:app --reload --host 0.0.0.0 --port 8000
 ```
 
-這會啟動前端開發伺服器並自動代理 API 請求到後端。
+### 3. 生產環境
+
+```bash
+# 建置前端
+npm run build
+
+# 啟動後端（會自動提供前端靜態檔案）
+uvicorn backend.main:app --host 0.0.0.0 --port 8000
+```
+
+## 資料庫設定
+
+系統使用 Databricks SQL Warehouse，需要設定以下環境變數和 secrets：
+
+- **環境變數**: `DATABRICKS_HOST`
+- **Databricks Secrets** (scope: `gdp-poc-keys`):
+  - `WAREHOUSE_HTTP_PATH`
+  - `WAREHOUSE_TOKEN`
+
+## 資料表
+
+- `dev_temp.data_engineer.gdp_menu_data` - 選單資料表
+- `dev_temp.data_engineer.gdp_page_data` - 頁面資料表
+
+## 技術規格
+
+### Backend
+- FastAPI 0.109.0
+- Uvicorn 0.27.0
+- Databricks SQL Connector
+- Python 3.11
+
+### Frontend
+- React 18.2
+- TypeScript 5.x
+- Vite 5.x
+- React Router DOM 6.20
 
 ## API 文件
 
-### GDP_API_0001 - 取得站台選單結構資料
+啟動後端服務後，可訪問自動生成的 API 文件：
 
-**Endpoint:** `GET /api/menu/structure`
+- Swagger UI: http://localhost:8000/docs
+- ReDoc: http://localhost:8000/redoc
 
-**Response 範例:**
-```json
-{
-  "menuGroups": [
-    {
-      "menuId": "menu001",
-      "menuName": "功能選單 A",
-      "menuNo": 1,
-      "pages": [
-        {
-          "pageId": "page001",
-          "pageName": "內嵌頁面 A1",
-          "pageNo": 1,
-          "iframeId": "iframe_a1"
-        },
-        {
-          "pageId": "page002",
-          "pageName": "URL導頁 A2",
-          "pageNo": 2,
-          "pageUrl": "https://example.com/page-a2"
-        }
-      ]
-    }
-  ]
-}
-```
+## 介面設計
 
-## 功能說明
-
-### GDP_UI_01 - 系統首頁
-- 包含 Header、Sidebar 和 Content Area 三個區域
-- 自動載入選單結構（GDP_FC_001）
-- 點選 Header 標題可回到首頁
-
-### GDP_UI_02 - 內容顯示頁面
-- 支援兩種顯示模式：
-  - **內嵌模式**：有 `iframeId` 時，內容嵌入顯示區域
-  - **URL 導頁模式**：有 `pageUrl` 時，執行頁面導向
-- 若兩者皆有，優先使用內嵌模式
-- 若兩者皆無，該選單項目不可點選
-
-## Databricks Apps 部署
-
-專案已配置 `app.yaml`，可直接部署到 Databricks Apps：
-
-```yaml
-command: ["uvicorn", "backend.main:app"]
-```
+- 深色底白字設計
+- 雙層式選單結構
+- 響應式布局
+- 即時驗證與錯誤提示
 
 ## 開發規範
 
-1. 所有 import 必須包含副檔名（`.tsx`, `.ts`, `.css`）
-2. 使用相對路徑 import 自身模組
-3. 前端參數必須使用系統分析文件定義的 API 格式
-4. 深色底白字設計風格
-5. API 路徑統一以 `/api/` 開頭
+本專案嚴格遵循以下文件規範：
 
-## 相關文件
+- 需求規格書
+- 系統分析文件
+- 系統設計文件
+- 資料庫設計文件
+- 功能流程圖
 
-- `.github/specs/需求規格書.md`
-- `.github/specs/功能流程圖.md`
-- `.github/specs/系統分析文件.md`
-- `.github/specs/系統設計文件.md`
-- `.github/specs/資料庫設計文件.md`
+所有實現都基於這些文件，未進行額外的功能擴充。

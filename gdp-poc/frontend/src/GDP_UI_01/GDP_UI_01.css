@@ -1,27 +1,13 @@
-/* GDP_UI_01 系統首頁樣式 */
-.gdp-ui-01 {
+.welcome-container {
   display: flex;
-  flex-direction: column;
-  height: 100vh;
-  overflow: hidden;
-}
-
-.main-container {
-  display: flex;
-  flex: 1;
-  overflow: hidden;
-}
-
-.content-area {
-  flex: 1;
-  padding: 30px;
-  overflow-y: auto;
-  background-color: #1a1a1a;
+  align-items: center;
+  justify-content: center;
+  height: 100%;
+  width: 100%;
 }
 
 .welcome-message {
   text-align: center;
-  margin-top: 100px;
 }
 
 .welcome-message h1 {

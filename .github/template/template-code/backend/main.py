@@ -1,8 +1,14 @@
+"""
+FastAPI Backend Main Entry
+包含選單API路由和靜態檔案服務
+"""
+
 import os
 import logging
-from fastapi import FastAPI, HTTPException, Request
+from fastapi import FastAPI, HTTPException
 from fastapi.staticfiles import StaticFiles
 from fastapi.responses import FileResponse
+from backend.api.menu import router as menu_router
 
 # --- Logging Setup ---
 logging.basicConfig(
@@ -11,43 +17,38 @@ logging.basicConfig(
 )
 logger = logging.getLogger(__name__)
 
-app = FastAPI(title="Simple FastAPI + React App")
+app = FastAPI(title="Template Real - Menu Demo App")
 
 # --- API Routes ---
-@app.get("/api/hello")
-async def hello():
-    logger.info("Accessed /api/hello")
-    return {"message": "Hello from FastAPI!"}
-
 @app.get("/api/health")
 async def health_check():
+    """健康檢查端點"""
     logger.info("Health check at /api/health")
     return {"status": "healthy"}
 
-@app.get("/api/data")
-async def get_data():
-    logger.info("Data requested at /api/data")
-    data = [{"x": x, "y": 2 ** x} for x in range(30)]
-    return {
-        "data": data,
-        "title": "Hello world!",
-        "x_title": "Apps",
-        "y_title": "Fun with data"
-    }
+# 註冊選單路由
+app.include_router(menu_router, prefix="/api/menu", tags=["menu"])
 
 # --- Static Files Setup ---
 static_dir = os.path.join(os.path.dirname(os.path.abspath(__file__)), "static")
 os.makedirs(static_dir, exist_ok=True)
 
-app.mount("/", StaticFiles(directory=static_dir, html=True), name="static")
-
 # --- Catch-all for React Routes ---
 @app.get("/{full_path:path}")
 async def serve_react(full_path: str):
+    """處理所有React路由和靜態檔案"""
+    # 檢查是否為靜態資源（assets 目錄下的檔案）
+    if full_path.startswith("assets/"):
+        file_path = os.path.join(static_dir, full_path)
+        if os.path.exists(file_path):
+            return FileResponse(file_path)
+    
+    # 對於所有其他路徑，返回 index.html（React Router 會處理）
     index_html = os.path.join(static_dir, "index.html")
     if os.path.exists(index_html):
         logger.info(f"Serving React frontend for path: /{full_path}")
         return FileResponse(index_html)
+    
     logger.error("Frontend not built. index.html missing.")
     raise HTTPException(
         status_code=404,

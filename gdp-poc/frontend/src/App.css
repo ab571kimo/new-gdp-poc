@@ -1,0 +1,46 @@
+.App {
+  width: 100%;
+  height: 100vh;
+  display: flex;
+  flex-direction: column;
+  background-color: #1a1a1a;
+  color: #ffffff;
+}
+
+.app-header {
+  background-color: #2d2d2d;
+  padding: 15px 20px;
+  border-bottom: 2px solid #404040;
+  display: flex;
+  align-items: center;
+}
+
+.app-header h1 {
+  font-size: 20px;
+  font-weight: bold;
+  cursor: pointer;
+  transition: color 0.3s;
+  color: #ffffff;
+}
+
+.app-header h1 a {
+  text-decoration: none;
+  color: inherit;
+}
+
+.app-header h1:hover {
+  color: #4a9eff;
+}
+
+.app-body {
+  display: flex;
+  flex: 1;
+  overflow: hidden;
+}
+
+.content {
+  flex: 1;
+  overflow-y: auto;
+  background-color: #1a1a1a;
+  padding: 30px;
+}

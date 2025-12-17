@@ -1,57 +1,74 @@
-# Node.js + FastAPI Hello World App
+# Template Real - Menu Demo App
 
-A simple hello world template that demonstrates how to build full-stack applications using Node.js (React) frontend with FastAPI backend for Databricks Apps.
-
-## Architecture
-
+## 前端規則
+- 前端頁面為三段式版面，Header（頂）、Sidebar（左）、Main（右）
+- 站台所有頁面都依照此架構呈現在Main，不得例外
+- 共用的頁面放置於components
+- 獨立頁面放置於pages/{專案名稱}-UI-{編號}
+- 於App.tsx的route設定獨立頁面的Url，依據功能命名，不得用編號
+```html
+function App() {
+  return (
+    <Router>
+      <Routes>
+        <Route path="/" element={<Layout />}>
+          <Route index element={<HomePage />} />
+          <Route path="/homepage" element={<HomePage />} />
+          <Route path="/chatbot" element={<Chatbot />} />
+          <Route path="/dashboard" element={<Dashboard />} />
+          <Route path="/system-config" element={<SystemConfig />} />
+          <Route path="*" element={<NotFound />} />
+        </Route>
+      </Routes>
+    </Router>
+  )
+}
 ```
-React Frontend (TypeScript + Vite)
-    ↓ API calls
-FastAPI Backend (Python)
-    ↓ Serves static files + API
-Databricks Apps
+- API於所屬的各獨立頁面內呼叫
+
+## 後端規則
+- 所有API的Url皆須依照 api/{功能名稱}/{行為} 命名規則
+- API檔案路徑於api/{功能名稱}.py
+- main.py檔案編寫
+```python
+"""註冊 API 路由"""
+app.include_router(menu_router, prefix="/api/menu", tags=["menu"])
+"""設定靜態檔案目錄"""
+static_dir = os.path.join(os.path.dirname(os.path.abspath(__file__)), "static")
+"""Catch-all 路由處理器，處理後端不存在的url交給前端"""
+@app.get("/{full_path:path}")
+async def serve_react(full_path: str):
+    """處理所有React路由"""
+    index_html = os.path.join(static_dir, "index.html")
+    if os.path.exists(index_html):
+        logger.info(f"Serving React frontend for path: /{full_path}")
+        return FileResponse(index_html)
+    logger.error("Frontend not built. index.html missing.")
+    raise HTTPException(
+        status_code=404,
+        detail="Frontend not built. Please run 'npm run build' first."
+    )
 ```
 
-## Setup
-
-1. **Install Python dependencies:**
+## Installation
 ```bash
+# Install frontend dependencies
+npm install
+
+# Install backend dependencies
 pip install -r requirements.txt
 ```
 
-2. **Install Node.js dependencies:**
-```bash
-npm install
-```
-
 ## Development
-
-1. **Start FastAPI backend:**
 ```bash
-uvicorn backend.main:app --reload --host 0.0.0.0 --port 8000
-```
-
-2. **In another terminal, start React dev server:**
-```bash
+# Run frontend dev server
 npm run dev
+
+# Run backend server
+uvicorn backend.main:app --reload
 ```
 
-- Frontend: http://localhost:5173 (with API proxy)
-- Backend API docs: http://localhost:8000/docs
-
-## Production
-
-Build and run:
+## Build
 ```bash
 npm run build
-uvicorn backend.main:app --host 0.0.0.0 --port 8000
 ```
-
-## Databricks Apps Deployment
-
-Configured for Databricks Apps with `app.yaml`. Uses `DATABRICKS_APP_PORT` environment variable automatically.
-
-## API
-
-- `GET /api/hello` - Hello world message
-- `GET /docs` - FastAPI interactive documentation

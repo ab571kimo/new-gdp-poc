@@ -14,8 +14,9 @@
     "strict": true,
     "noUnusedLocals": true,
     "noUnusedParameters": true,
-    "noFallthroughCasesInSwitch": true
+    "noFallthroughCasesInSwitch": true,
+    "composite": true,
+    "allowSyntheticDefaultImports": true
   },
-  "include": ["frontend/src"],
-  "references": [{ "path": "./frontend/tsconfig.node.json" }]
+  "include": ["frontend/src", "vite.config.ts"]
 } 

@@ -1,1 +1,3 @@
-# Menu API package
+"""
+Menu API package initialization
+"""

@@ -1,0 +1,60 @@
+.sidebar-container {
+  height: 100%;
+}
+
+.menu-group {
+  margin-bottom: 1.5rem;
+}
+
+.menu-group-title {
+  font-size: 0.875rem;
+  font-weight: 600;
+  color: #475569;
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+  margin-bottom: 0.5rem;
+  padding: 0.5rem 0.75rem;
+}
+
+.menu-items {
+  list-style: none;
+}
+
+.menu-item {
+  margin-bottom: 0.25rem;
+}
+
+.menu-item-link {
+  display: block;
+  padding: 0.75rem 1rem;
+  color: #334155;
+  text-decoration: none;
+  border-radius: 0.375rem;
+  transition: all 0.2s;
+  font-size: 0.9375rem;
+}
+
+.menu-item-link:hover {
+  background-color: #e0e7ff;
+  color: #1e40af;
+}
+
+.menu-item-link.active {
+  background-color: #3b82f6;
+  color: white;
+  font-weight: 500;
+}
+
+.loading,
+.error {
+  text-align: center;
+  padding: 2rem 1rem;
+}
+
+.loading {
+  color: #64748b;
+}
+
+.error {
+  color: #dc2626;
+}

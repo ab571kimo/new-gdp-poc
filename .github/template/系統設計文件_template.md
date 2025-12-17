@@ -50,44 +50,16 @@
 | typescript | ^5.0.0 | 型別系統 |
 <!--- 以下續編 -->
 
-# 程式產出位置
-- 產出位置參考下方
-```
-├── .github/
-├── {專案名稱}/
-│   ├── backend/
-│   ├── frontend/
-│   ├── app.yaml
-│   ├── package.json
-│   ├── requirements.txt
-│   ├── tsconfig.json
-│   └── .databricks/
-│   	└── .gitignore
-├── .gitignore
-└── run.sh
-```
+# 程式架構，[必須]讀取資料夾下所有檔案，並且依照作業
+- .github\template\template-code\*
 
-# 設定檔
-- 前後端依照此設定檔開發及擴充
-```
-./app.yaml
-./package.json 
-./requirements.txt
-./tsconfig.json
-./vite.config.ts
-
-```
-## ./app.yaml
-command: ["uvicorn", "backend.main:app"]
-
-## .gitignore 設定
-```
-node_modules/
-```
-## run.sh
-```
-python.exe -m uvicorn {project_name}.backend.main:app --reload --host 0.0.0.0 --port 8000 
-```
+## 以下檔案[必須]依照template-code位置存放，且內容不變
+- vite.config.ts
+- tsconfig.json
+- package.json
+- app.yaml
+## 以下檔案不存在，不需建立
+- tsconfig.node.json
 
 ## 執行專案
 ```
@@ -103,10 +75,7 @@ uvicorn backend.main:app --host 0.0.0.0 --port 8000
 ```
 
 # 路由處理邏輯
-/api/* → 後端 API 處理
-其他路徑 → 返回 index.html（SPA 路由）
-啟動設定 (從 app.yaml)
-Databricks Apps 環境不需要CORS middleware
+- [必須]依照template-code方式作業
 
 
 # 目錄結構 
@@ -145,16 +114,6 @@ frontend/
 # Databricks 資料庫連線方式
 
 ```
-
-app.yaml 環境變數
-
-env:
-- name: WAREHOUSE_TOKEN
-  value: ***
-  
-- name: WAREHOUSE_HTTP_PATH
-  value: ***
- 
 
 程式碼
     try:

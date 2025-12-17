@@ -1,33 +1,43 @@
+"""
+Menu API - GDP POC 選單結構管理
+提供選單與頁面的查詢和批次更新功能
+"""
+
 import os
 import logging
+import time
 from typing import List, Optional
 from fastapi import APIRouter, HTTPException
-from pydantic import BaseModel
+from pydantic import BaseModel, Field, field_validator
 from databricks import sql
 
-# --- Logging Setup ---
 logger = logging.getLogger(__name__)
-
-# --- Router Setup ---
-router = APIRouter(prefix="/api/menu", tags=["menu"])
+router = APIRouter()
 
 
-# --- Data Models ---
-class Page(BaseModel):
+# --- Pydantic Models ---
+class PageData(BaseModel):
     """頁面資料模型"""
-    pageId: str
-    pageName: str
-    pageNo: int
-    iframeId: Optional[str] = None
-    pageUrl: Optional[str] = None
+    page_id: str = Field(..., description="頁面識別碼")
+    page_name: str = Field(..., min_length=1, max_length=50, description="頁面名稱")
+    page_no: int = Field(..., gt=0, description="頁面排序編號")
+    menu_id: str = Field(..., description="所屬選單識別碼")
+    dashboard_id: Optional[str] = Field(None, description="內嵌頁面識別碼")
+    url: Optional[str] = Field(None, description="頁面網址")
+    genie_id: Optional[str] = Field(None, description="Genie識別碼")
 
 
 class MenuGroup(BaseModel):
-    """選單群組資料模型"""
-    menuId: str
-    menuName: str
-    menuNo: int
-    pages: List[Page]
+    """選單群組模型"""
+    menu_id: str = Field(..., description="選單識別碼")
+    menu_name: str = Field(..., min_length=1, max_length=50, description="選單名稱")
+    menu_no: int = Field(..., gt=0, description="選單排序編號")
+    pages: List[PageData] = Field(default_factory=list, description="頁面列表")
+
+
+class BatchUpdateRequest(BaseModel):
+    """批次更新請求模型"""
+    menuGroups: List[MenuGroup] = Field(..., description="完整的選單群組列表")
 
 
 class MenuStructureResponse(BaseModel):
@@ -35,141 +45,248 @@ class MenuStructureResponse(BaseModel):
     menuGroups: List[MenuGroup]
 
 
+class SuccessResponse(BaseModel):
+    """成功回應模型"""
+    success: bool
+    message: str
+
+
 class ErrorResponse(BaseModel):
     """錯誤回應模型"""
+    success: bool = False
+    message: str
     error: str
-    errorCode: str
+
+
+# --- Database Connection Helper ---
+def get_databricks_connection():
+    """建立 Databricks SQL 連線"""
+    try:
+        server_hostname = os.getenv("DATABRICKS_HOST")
+        
+        from databricks.sdk.runtime import dbutils
+        http_path = dbutils.secrets.get(scope="gdp-poc-keys", key="WAREHOUSE_HTTP_PATH")
+        access_token = dbutils.secrets.get(scope="gdp-poc-keys", key="WAREHOUSE_TOKEN")
+        
+        connection = sql.connect(
+            server_hostname=server_hostname,
+            http_path=http_path,
+            access_token=access_token
+        )
+        return connection
+    except Exception as e:
+        logger.error(f"❌ Databricks 連線失敗: {e}")
+        raise HTTPException(status_code=500, detail="資料庫連線失敗")
 
 
 # --- API Endpoints ---
-@router.get(
-    "/structure",
-    response_model=MenuStructureResponse,
-    responses={
-        200: {"model": MenuStructureResponse, "description": "成功取得選單結構"},
-        400: {"model": ErrorResponse, "description": "請求錯誤"},
-        500: {"model": ErrorResponse, "description": "伺服器錯誤"}
-    }
-)
+
+@router.get("/structure", response_model=MenuStructureResponse, status_code=200)
 async def get_menu_structure():
     """
     GDP_API_0001 - 取得站台選單結構資料
     
-    回傳雙層式選單（選單群組 > 頁面）的完整結構。
+    回傳雙層式選單（選單群組 > 頁面）的完整結構
     
-    **業務邏輯說明:**
-    1. 查詢 gdp_menu_data 表取得所有選單群組，依 menu_no 欄位升冪排序
-    2. 依每個選單的 menu_id 查詢 gdp_page_data 表取得該選單群組下的所有頁面，依 page_no 欄位升冪排序
-    3. 組合選單群組與頁面資料，回傳完整的雙層結構
-    4. 若查詢結果為空，回傳空陣列
-    
-    **排序邏輯:**
-    - 選單群組按 menu_no 數字由小到大排序
-    - 每個選單群組內的頁面按 page_no 數字由小到大排序
-    
-    **頁面顯示模式判斷:**
-    - 若 dashboard_id 欄位有值，該頁面為內嵌模式
-    - 若 url 欄位有值（且 dashboard_id 為空），該頁面為 URL 導頁模式
-    - 若兩者皆有值，優先使用 dashboard_id（內嵌模式）
-    - 若兩者皆無值，仍回傳該頁面資料，由前端判斷該頁面不可點選
+    Returns:
+        MenuStructureResponse: 包含選單群組和頁面的完整結構
     """
+    start_time = time.time()
+    logger.info("📋 GET /api/menu/structure: 開始查詢選單結構")
+    
     try:
-        logger.info("開始查詢選單結構資料")
+        connection = get_databricks_connection()
         
-        # Databricks 連線設定 (從 dbutils secrets 取得)
-        from databricks.sdk.runtime import dbutils
-        
-        server_hostname = os.getenv("DATABRICKS_HOST")
-        http_path = dbutils.secrets.get(scope="gdp-poc-keys", key="WAREHOUSE_HTTP_PATH")
-        access_token = dbutils.secrets.get(scope="gdp-poc-keys", key="WAREHOUSE_TOKEN")
-        
-        # 驗證環境變數
-        if not all([server_hostname, http_path, access_token]):
-            logger.error("缺少必要的環境變數設定")
-            raise HTTPException(
-                status_code=500,
-                detail={
-                    "error": "資料庫連線設定不完整",
-                    "errorCode": "DB_CONFIG_MISSING"
-                }
-            )
-        
-        menu_groups = []
-        
-        with sql.connect(
-            server_hostname=server_hostname,
-            http_path=http_path,
-            access_token=access_token
-        ) as connection:
-            with connection.cursor() as cursor:
-                # 查詢選單群組資料
-                menu_query = """
-                    SELECT menu_id, menu_name, menu_no
-                    FROM dev_temp.data_engineer.gdp_menu_data
-                    ORDER BY menu_no ASC
+        with connection:
+            cursor = connection.cursor()
+            
+            # 1. 查詢所有選單群組，依 menu_no 升冪排序
+            menu_query = """
+                SELECT menu_id, menu_name, menu_no
+                FROM dev_temp.data_engineer.gdp_menu_data
+                ORDER BY menu_no ASC
+            """
+            logger.info("🔍 執行選單查詢...")
+            cursor.execute(menu_query)
+            menu_rows = cursor.fetchall()
+            
+            menu_groups = []
+            
+            # 2. 為每個選單群組查詢對應的頁面
+            for menu_row in menu_rows:
+                menu_id, menu_name, menu_no = menu_row
+                
+                page_query = """
+                    SELECT page_id, page_name, page_no, menu_id, dashboard_id, url, genie_id
+                    FROM dev_temp.data_engineer.gdp_page_data
+                    WHERE menu_id = ?
+                    ORDER BY page_no ASC
                 """
-                logger.info(f"執行選單查詢: {menu_query}")
-                cursor.execute(menu_query)
-                menu_results = cursor.fetchall()
+                cursor.execute(page_query, (menu_id,))
+                page_rows = cursor.fetchall()
                 
-                logger.info(f"查詢到 {len(menu_results)} 個選單群組")
+                pages = []
+                for page_row in page_rows:
+                    page_id, page_name, page_no, p_menu_id, dashboard_id, url, genie_id = page_row
+                    pages.append(PageData(
+                        page_id=page_id,
+                        page_name=page_name,
+                        page_no=page_no,
+                        menu_id=p_menu_id,
+                        dashboard_id=dashboard_id,
+                        url=url,
+                        genie_id=genie_id
+                    ))
                 
-                # 處理每個選單群組
-                for menu_row in menu_results:
-                    menu_id, menu_name, menu_no = menu_row
-                    
-                    # 查詢該選單下的頁面資料
-                    page_query = """
-                        SELECT page_id, page_name, page_no, dashboard_id, url
-                        FROM dev_temp.data_engineer.gdp_page_data
-                        WHERE menu_id = ?
-                        ORDER BY page_no ASC
-                    """
-                    logger.info(f"執行頁面查詢 (menu_id={menu_id}): {page_query}")
-                    cursor.execute(page_query, (menu_id,))
-                    page_results = cursor.fetchall()
-                    
-                    logger.info(f"選單 {menu_id} 包含 {len(page_results)} 個頁面")
-                    
-                    # 組裝頁面資料
-                    pages = []
-                    for page_row in page_results:
-                        page_id, page_name, page_no, dashboard_id, url = page_row
-                        
-                        # 建立頁面物件
-                        page = Page(
-                            pageId=page_id,
-                            pageName=page_name,
-                            pageNo=page_no,
-                            iframeId=dashboard_id if dashboard_id else None,
-                            pageUrl=url if url else None
-                        )
-                        pages.append(page)
-                    
-                    # 組裝選單群組資料
-                    menu_group = MenuGroup(
-                        menuId=menu_id,
-                        menuName=menu_name,
-                        menuNo=menu_no,
-                        pages=pages
-                    )
-                    menu_groups.append(menu_group)
+                menu_groups.append(MenuGroup(
+                    menu_id=menu_id,
+                    menu_name=menu_name,
+                    menu_no=menu_no,
+                    pages=pages
+                ))
+            
+            cursor.close()
         
-        logger.info(f"成功組裝 {len(menu_groups)} 個選單群組的完整結構")
+        query_time = time.time() - start_time
+        logger.info(f"✅ 查詢成功，共 {len(menu_groups)} 個選單群組 (耗時: {query_time:.2f}秒)")
         
-        # 回傳選單結構
         return MenuStructureResponse(menuGroups=menu_groups)
-        
-    except HTTPException as he:
-        # 重新拋出 HTTP 例外
-        raise he
-        
+    
+    except HTTPException:
+        raise
     except Exception as e:
-        logger.error(f"查詢選單結構時發生錯誤: {str(e)}", exc_info=True)
+        query_time = time.time() - start_time
+        logger.error(f"❌ 查詢失敗 (耗時: {query_time:.2f}秒): {e}")
+        raise HTTPException(
+            status_code=500,
+            detail={"error": str(e), "errorCode": "QUERY_ERROR"}
+        )
+
+
+@router.post("/structure/batch-update", response_model=SuccessResponse, status_code=200)
+async def batch_update_menu_structure(request: BatchUpdateRequest):
+    """
+    GDP_API_0002 - 批次更新選單與頁面結構
+    
+    一次性更新所有選單和頁面的資訊及排序，使用 Transaction 確保資料一致性
+    
+    Args:
+        request: 包含完整選單群組列表的批次更新請求
+    
+    Returns:
+        SuccessResponse: 更新成功的回應訊息
+    """
+    start_time = time.time()
+    logger.info("📝 POST /api/menu/structure/batch-update: 開始批次更新")
+    logger.info(f"📊 更新資料: {len(request.menuGroups)} 個選單群組")
+    
+    try:
+        connection = get_databricks_connection()
+        
+        with connection:
+            cursor = connection.cursor()
+            
+            # 開啟交易
+            logger.info("🔄 開始交易...")
+            
+            try:
+                # 更新選單資料
+                for menu_group in request.menuGroups:
+                    menu_merge_query = """
+                        MERGE INTO dev_temp.data_engineer.gdp_menu_data AS target
+                        USING (SELECT ? AS menu_id, ? AS menu_name, ? AS menu_no) AS source
+                        ON target.menu_id = source.menu_id
+                        WHEN MATCHED THEN
+                            UPDATE SET 
+                                menu_name = source.menu_name,
+                                menu_no = source.menu_no
+                        WHEN NOT MATCHED THEN
+                            INSERT (menu_id, menu_name, menu_no)
+                            VALUES (source.menu_id, source.menu_name, source.menu_no)
+                    """
+                    cursor.execute(menu_merge_query, (
+                        menu_group.menu_id,
+                        menu_group.menu_name,
+                        menu_group.menu_no
+                    ))
+                    logger.info(f"✓ 更新選單: {menu_group.menu_id} - {menu_group.menu_name}")
+                    
+                    # 更新該選單下的頁面資料
+                    for page in menu_group.pages:
+                        page_merge_query = """
+                            MERGE INTO dev_temp.data_engineer.gdp_page_data AS target
+                            USING (
+                                SELECT 
+                                    ? AS page_id,
+                                    ? AS page_name,
+                                    ? AS page_no,
+                                    ? AS menu_id,
+                                    ? AS dashboard_id,
+                                    ? AS url,
+                                    ? AS genie_id
+                            ) AS source
+                            ON target.page_id = source.page_id
+                            WHEN MATCHED THEN
+                                UPDATE SET 
+                                    page_name = source.page_name,
+                                    page_no = source.page_no,
+                                    menu_id = source.menu_id,
+                                    dashboard_id = source.dashboard_id,
+                                    url = source.url,
+                                    genie_id = source.genie_id
+                            WHEN NOT MATCHED THEN
+                                INSERT (page_id, page_name, page_no, menu_id, dashboard_id, url, genie_id)
+                                VALUES (source.page_id, source.page_name, source.page_no, source.menu_id, 
+                                        source.dashboard_id, source.url, source.genie_id)
+                        """
+                        cursor.execute(page_merge_query, (
+                            page.page_id,
+                            page.page_name,
+                            page.page_no,
+                            page.menu_id,
+                            page.dashboard_id,
+                            page.url,
+                            page.genie_id
+                        ))
+                        logger.info(f"  ✓ 更新頁面: {page.page_id} - {page.page_name}")
+                
+                # 提交交易
+                connection.commit()
+                logger.info("✅ 交易提交成功")
+                
+            except Exception as e:
+                # 回滾交易
+                connection.rollback()
+                logger.error(f"❌ 交易回滾: {e}")
+                raise HTTPException(
+                    status_code=500,
+                    detail={
+                        "success": False,
+                        "message": "系統錯誤",
+                        "error": f"資料庫更新失敗，交易已回滾: {str(e)}"
+                    }
+                )
+            finally:
+                cursor.close()
+        
+        update_time = time.time() - start_time
+        logger.info(f"✅ 批次更新完成 (耗時: {update_time:.2f}秒)")
+        
+        return SuccessResponse(
+            success=True,
+            message="選單與頁面結構批次更新成功"
+        )
+    
+    except HTTPException:
+        raise
+    except Exception as e:
+        update_time = time.time() - start_time
+        logger.error(f"❌ 批次更新失敗 (耗時: {update_time:.2f}秒): {e}")
         raise HTTPException(
             status_code=500,
             detail={
-                "error": "資料庫查詢失敗",
-                "errorCode": "DB_QUERY_ERROR"
+                "success": False,
+                "message": "系統錯誤",
+                "error": str(e)
             }
         )
